@@ -1,5 +1,5 @@
 /*************************
- * Codigo final v1.0
+ * Codigo final
  ************************/
 
 #include <Adafruit_ADS1X15.h>
@@ -14,23 +14,23 @@ Adafruit_ADS1115 ads1115;
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Inicializando los sensores...");
   ads1115.begin(0x48);
   ads1115.setGain(GAIN_ONE);
+  Serial.println("Inicializando los sensores...");
   Serial.println("Calibrando los sensores...");
   Serial.println("Sensores calibrados...");
+  Serial.println("Iniciando lectura...");
 }
 
 void loop() {
   Serial.println("*********************");
   medirHumedad(channelHumedad);
-//  tempValue = averageSample(10, channelTemp);
   medirTemperatura(channelTemp);
   delay(2000); 
 }
 
 void medirHumedad(int channelValue) {  
-  humedadValue = ads1115.readADC_SingleEnded(channelValue);
+  sensorValue = ads1115.readADC_SingleEnded(channelValue);
   int humedadPorcentaje = map(humedadValue, 30000, 16800, 0, 100);
   Serial.print("Humedad: ");
   Serial.println(humedadValue,DEC);
@@ -52,6 +52,7 @@ void medirTemperatura (int channelValue) {
   Serial.println("º");
 }
 
+/*
 int16_t averageSample (int ArrayLength, int channelValue) {
   int16_t media = 0;
   for (int i = 0; i < ArrayLength; i++) {
@@ -59,4 +60,4 @@ int16_t averageSample (int ArrayLength, int channelValue) {
   }
   
   return media;
-}
+} */
