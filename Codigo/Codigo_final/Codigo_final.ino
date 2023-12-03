@@ -4,11 +4,12 @@
 
 #include <Adafruit_ADS1X15.h>
 
-#define channelTemp 0
-#define channelHumedad 1
+#define channelTemp 1
+#define channelHumedad 0
 #define channelPh 2
 
 int16_t humedadValue = 0;
+int16_t mediaHumedad;
 int16_t tempValue = 0;
 float Offset = 0.95;
 int samplingInterval = 20;
@@ -21,7 +22,7 @@ Adafruit_ADS1115 ads1115;
 void setup() {
   Serial.begin(9600);
   ads1115.begin(0x48);
-  if (!ads.begin()) {
+  if (!ads1115.begin()) {
     Serial.println("Fallo al inicializar el ADS");
     while (1)
       ;
@@ -29,6 +30,7 @@ void setup() {
   ads1115.setGain(GAIN_ONE);
   Serial.println("Inicializando los sensores...");
   Serial.println("Calibrando los sensores...");
+  mediaHumedad = averageSample(30, channelHumedad);
   Serial.println("Sensores calibrados...");
   Serial.println("Iniciando lectura...");
 }
@@ -37,13 +39,13 @@ void loop() {
   Serial.println("*********************");
   medirHumedad(channelHumedad);
   medirTemperatura(channelTemp);
-  medirPh(ChannelPh);
-  delay(2000);
+  medirPh(channelPh);
+  delay(5000);
 }
 
 void medirHumedad(int channelValue) {  
-  sensorValue = ads1115.readADC_SingleEnded(channelValue);
-  int humedadPorcentaje = map(humedadValue, 30000, 16800, 0, 100);
+  humedadValue = ads1115.readADC_SingleEnded(channelValue);
+  int humedadPorcentaje = map(humedadValue, mediaHumedad, 77, 0, 100);
   Serial.print("Humedad: ");
   Serial.println(humedadValue,DEC);
   Serial.print("Porcentaje de humedad: ");
@@ -56,11 +58,11 @@ void medirTemperatura (int channelValue) {
   float b = 0.79;
   float m = 0.033;
   float vo = (adc0 * 4.096) / 32767;
-//  Serial.print("Valor digital leido: ");
-//  Serial.println(vo);
+  Serial.print("vo temperatura: ");
+  Serial.println(vo);
   float temperatura = (vo - b) / m;
   Serial.print("Temperatura: ");
-  Serial.print(temperatura);
+  Serial.print(temperatura, DEC);
   Serial.println("º");
 }
 
@@ -72,7 +74,7 @@ void medirPh (int channelValue) {
   float phSum = 0;
 
   if (millis() - samplingTime > samplingInterval) {
-    pHArray[pHArrayIndex++] = ads.readADC_SingleEnded(channelValue);
+    pHArray[pHArrayIndex++] = ads1115.readADC_SingleEnded(channelValue);
     phSum += pHArray[pHArrayIndex];
     if (pHArrayIndex == ArrayLength){
         pHArrayIndex = 0;
@@ -118,18 +120,18 @@ void medirPh (int channelValue) {
 }
 
     if (millis() - printTime > printInterval) {
-    Serial.print("Voltage:");
-    Serial.print(voltage, 2);
-    Serial.print('\n');
-    Serial.print("pHSum:");
-    Serial.println(phSum, 2);
+    Serial.print("Voltage pH:");
+    Serial.println(voltage, 2);
+//    Serial.print('\n');
+//    Serial.print("pHSum:");
+//    Serial.println(phSum, 2);
     Serial.print("pH:");
     Serial.println(pHValue, 2);
     printTime = millis();
   }
 }
 
-/*
+
 int16_t averageSample (int ArrayLength, int channelValue) {
   int16_t media = 0;
   for (int i = 0; i < ArrayLength; i++) {
@@ -137,4 +139,4 @@ int16_t averageSample (int ArrayLength, int channelValue) {
   }
   
   return media;
-} */
+}

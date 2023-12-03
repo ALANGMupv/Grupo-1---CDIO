@@ -11,7 +11,7 @@ void setup() {
 }
 
 void loop() {
-  medirTemperatura(channelValue);
+  medirTemperatura(0);
   delay(2000);
 }
 
