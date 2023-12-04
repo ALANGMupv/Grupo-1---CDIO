@@ -7,6 +7,7 @@
 #define channelTemp 1
 #define channelHumedad 0
 #define channelPh 2
+#define channelSal 3
 
 int16_t humedadValue = 0;
 int16_t mediaHumedad;
@@ -40,6 +41,8 @@ void loop() {
   medirHumedad(channelHumedad);
   medirTemperatura(channelTemp);
   medirPh(channelPh);
+  medirSalinidad();
+//  medirSalinidad(channelSal);
   delay(5000);
 }
 
@@ -65,6 +68,33 @@ void medirTemperatura (int channelValue) {
   Serial.print(temperatura, DEC);
   Serial.println("º");
 }
+
+void medirSalinidad () {
+  
+  int16_t adc0;
+
+  digitalWrite(power_PIN, HIGH);
+  delay(100);
+
+  adc0 = ads1115.readADC_SingleEnded(0);
+//  adc0 = analogRead(A0);
+  digitalWrite(power_PIN, LOW);
+  delay(100);
+
+  Serial.print("Lectura digital = ");
+  Serial.println(adc0, DEC);
+
+  Serial.print("Gramos de sal: ");
+  Serial.println(calcularSalinidad(adc0));
+  Serial.println("........................");
+
+}
+
+float calcularSalinidad(int adc0) {
+  float grSal = (adc0 - 575.6) / 6.32;
+  
+  return grSal;
+} 
 
 void medirPh (int channelValue) {
   int pHArray[ArrayLength];
