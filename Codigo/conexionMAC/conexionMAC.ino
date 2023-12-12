@@ -1,13 +1,14 @@
 #include <ESP8266WiFi.h>
 
-// Comentar/Descomentar para ver mensajes de depuracion en monitor serie y/o respuesta del HTTP server
+// mensajes de depuracion en monitor serie 
 #define PRINT_DEBUG_MESSAGES
+// respuesta del HTTP server
 //#define PRINT_HTTP_RESPONSE
 
-// Comentar/Descomentar para conexion Fuera/Dentro de UPV
+// conexion Fuera/Dentro de UPV
 //#define WiFi_CONNECTION_UPV
 
-// Selecciona que servidor REST quieres utilizar entre ThingSpeak y Dweet
+// servidor REST (ThingSpeak/Dweet)
 #define REST_SERVER_THINGSPEAK //https://thingspeak.com/channels/2358189
 //#define REST_SERVER_DWEET //https://dweet.io/follow/cdiocurso2023g01
 
@@ -48,10 +49,10 @@ WiFiClient client;
 
 #ifdef REST_SERVER_THINGSPEAK 
   const char Rest_Host[] = "api.thingspeak.com";
-  String MyWriteAPIKey="53NUJ2ME5T7NMVFL"; // Escribe la clave de tu canal ThingSpeak
+  String MyWriteAPIKey="53NUJ2ME5T7NMVFL"; // clave de canal ThingSpeak
 #else 
   const char Rest_Host[] = "dweet.io";
-  String MyWriteAPIKey="cdiocurso2023g01"; // Escribe la clave de tu canal Dweet
+  String MyWriteAPIKey="cdiocurso2023g01"; // clave de canal Dweet
 #endif
 
 #define NUM_FIELDS_TO_SEND 2 //Numero de medidas a enviar al servidor REST (Entre 1 y 8)
