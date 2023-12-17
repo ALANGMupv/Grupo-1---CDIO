@@ -59,12 +59,13 @@ WiFiClient client;
 #endif
 
 //Numero de medidas a enviar al servidor REST (Entre 1 y 8)
-#define NUM_FIELDS_TO_SEND 3 
+#define NUM_FIELDS_TO_SEND 4 
 
 #define power_PIN 5
 #define channelTemp 1
 #define channelHumedad 0
 #define channelPh 2
+#define channelLum 3
 //#define channelSal 2
 
 int16_t humedadValue = 0;
@@ -135,10 +136,16 @@ void loop() {
   Serial.println("------");
   
   data[3] = medirPh(channelPh);
+
+//  Serial.println("------");
   
 //  data[4] = medirSalinidad();
 
-  HTTPGet(data, NUM_FIELDS_TO_SEND  );
+  data[4] = medirLum(channelLum);
+
+  Serial.println("------");
+
+  HTTPGet(data, NUM_FIELDS_TO_SEND);
   
   delay(5000);
 }
@@ -207,6 +214,26 @@ float medirPh (int channelValue) {
   return pHValue;
 }
 
+String medirLum (int channelValue) {
+  String res = " ";
+  int16_t adc0 = ads1115.readADC_SingleEnded(0);
+
+  if (adc0 <= 200 ) {
+    res = "Oscuro";
+    Serial.println("Luminosidad: oscuro");
+  } else if (adc0 <= 1100 ) {
+    res = "Sombra";
+    Serial.println("Luminosidad: sombra");
+  } else if (adc0 <= 3500 ) {
+    res = "Luz ambiente";
+    Serial.println("Luminosidad: luz ambiente");
+  } else if (adc0 <=30200 ) {
+    res = "Linterna";
+    Serial.println("Luminosidad: luz de movil");
+  } 
+
+  return res;
+}
 
 int16_t averageSample (int ArrayLength, int channelValue) {
   int16_t media = 0;
