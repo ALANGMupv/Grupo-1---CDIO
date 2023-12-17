@@ -59,7 +59,7 @@ WiFiClient client;
 #endif
 
 //Numero de medidas a enviar al servidor REST (Entre 1 y 8)
-#define NUM_FIELDS_TO_SEND 4 
+#define NUM_FIELDS_TO_SEND 5 
 
 #define power_PIN 5
 #define channelTemp 1
@@ -137,11 +137,13 @@ void loop() {
   
   data[3] = medirPh(channelPh);
 
-//  Serial.println("------");
+  Serial.println("------");
   
-//  data[4] = medirSalinidad();
-
   data[4] = medirLum(channelLum);
+
+  Serial.println("------");
+  
+  data[5] = medirSalinidad();
 
   Serial.println("------");
 
@@ -183,7 +185,11 @@ float medirSalinidad () {
   int16_t adc0;
 
   digitalWrite(power_PIN, HIGH);
+  delay(100);
+  
   adc0 = analogRead(A0);
+  digitalWrite(power_PIN, LOW);
+  delay(100);
 
   Serial.print("Lectura sal  = ");
   Serial.println(adc0, DEC);
@@ -214,25 +220,20 @@ float medirPh (int channelValue) {
   return pHValue;
 }
 
-String medirLum (int channelValue) {
-  String res = " ";
-  int16_t adc0 = ads1115.readADC_SingleEnded(0);
+int16_t medirLum (int channelValue) {
+  int16_t adc0 = ads1115.readADC_SingleEnded(channelValue);
 
-  if (adc0 <= 200 ) {
-    res = "Oscuro";
+  if (adc0 <= 400 ) {
     Serial.println("Luminosidad: oscuro");
   } else if (adc0 <= 1100 ) {
-    res = "Sombra";
     Serial.println("Luminosidad: sombra");
   } else if (adc0 <= 3500 ) {
-    res = "Luz ambiente";
     Serial.println("Luminosidad: luz ambiente");
   } else if (adc0 <=30200 ) {
-    res = "Linterna";
     Serial.println("Luminosidad: luz de movil");
   } 
 
-  return res;
+  return adc0;
 }
 
 int16_t averageSample (int ArrayLength, int channelValue) {
