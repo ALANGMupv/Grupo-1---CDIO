@@ -1,9 +1,7 @@
-/*************************
- * Codigo final
- ************************/
-
 #include <Adafruit_ADS1X15.h>
 #include <ESP8266WiFi.h>
+#include <SoftwareSerial.h>
+#include "TinyGPS++.h"
 
 // mensajes de depuracion en monitor serie 
 #define PRINT_DEBUG_MESSAGES
@@ -73,11 +71,29 @@ int16_t humedadValue = 0;
 int16_t mediaHumedad;
 int16_t tempValue = 0;
 float Offset = -0.20;
+char dato=' ';
 
 Adafruit_ADS1115 ads1115;
 
+SoftwareSerial gps(12,13);
+
+/***************************************
+ *                                     *
+ *                 *                   *
+ *                * *                  *
+ *               * * *                 *
+ *              * * * *                *
+ *             * * * * *               *
+ *            * * * * * *              *
+ *           CODIGO  FINAL             *
+ *           * * * * * * *             *
+ *               |||||                 *
+ ***************************************/
+
 void setup() {
-  Serial.begin(9600);
+  #ifdef PRINT_DEBUG_MESSAGES
+    Serial.begin(9600);
+  #endif
   ads1115.begin(0x48);
   if (!ads1115.begin()) {
     Serial.println("Fallo al inicializar el ADS");
@@ -90,6 +106,19 @@ void setup() {
   mediaHumedad = averageSample(30, channelHumedad);
   Serial.println("Sensores calibrados...");
   Serial.println("Iniciando lectura...");
+
+  
+  
+  connectWiFi();
+
+  #ifdef PRINT_DEBUG_MESSAGES
+      Serial.print("Server_Host: ");
+      Serial.println(Server_Host);
+      Serial.print("Port: ");
+      Serial.println(String( Server_HttpPort ));
+      Serial.print("Server_Rest: ");
+      Serial.println(Rest_Host);
+  #endif
 }
 
 void loop() {
@@ -99,11 +128,17 @@ void loop() {
 
   data[1] = medirHumedad(channelHumedad);
 
+  Serial.println("------");
+
   data[2] = medirTemperatura(channelTemp);
+
+  Serial.println("------");
   
   data[3] = medirPh(channelPh);
   
-  data[4] = medirSalinidad();
+//  data[4] = medirSalinidad();
+
+  HTTPGet(data, NUM_FIELDS_TO_SEND  );
   
   delay(5000);
 }
@@ -142,15 +177,12 @@ float medirSalinidad () {
 
   digitalWrite(power_PIN, HIGH);
   adc0 = analogRead(A0);
-  float grSal = (adc0 - 575.6) / 6.32;
-
-//  adc0 = ads1115.readADC_SingleEnded(0);
-//  
-//  digitalWrite(power_PIN, LOW);
-//  delay(100);
 
   Serial.print("Lectura sal  = ");
   Serial.println(adc0, DEC);
+
+
+  float grSal = (adc0 - 575.6) / 6.32;
 
   Serial.print("Gramos de sal: ");
   Serial.println(grSal);
@@ -158,12 +190,6 @@ float medirSalinidad () {
 
   return grSal;
 }
-
-/*float calcularSalinidad(int adc0) {
-  float grSal = (adc0 - 575.6) / 6.32;
-  
-  return grSal;
-} */
 
 float medirPh (int channelValue) {
   static float pHValue, voltage;
@@ -191,8 +217,7 @@ int16_t averageSample (int ArrayLength, int channelValue) {
   return media;
 }
 
-void connectWiFi()
-{
+void connectWiFi() {
   #ifdef PRINT_DEBUG_MESSAGES
     Serial.print("MAC: ");
     Serial.println(WiFi.macAddress());
@@ -200,8 +225,7 @@ void connectWiFi()
   
   WiFi.begin(WiFiSSID, WiFiPSK);
 
-  while (WiFi.status() != WL_CONNECTED)
-  {
+  while (WiFi.status() != WL_CONNECTED)  {
     #ifdef PRINT_DEBUG_MESSAGES
        Serial.println(".");
     #endif
@@ -217,7 +241,7 @@ void connectWiFi()
 /////////////// HTTP POST  ThingSpeak////////////////
 //////////////////////////////////////////////////////
 
-void HTTPPost(String fieldData[], int numFields){
+void HTTPPost(String fieldData[], int numFields) {
 
 // Esta funcion construye el string de datos a enviar a ThingSpeak mediante el metodo HTTP POST
 // La funcion envia "numFields" datos, del array fieldData.
