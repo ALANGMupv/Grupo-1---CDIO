@@ -7,34 +7,6 @@
 #include <SoftwareSerial.h>
 #include "TinyGPS++.h"
 
-/*Altitude TinyGPSPlus gps;
-  while (ss.available() > 0)
-    gps.encode(ss.read());
-    if (gps.altitude.isUpdated())
-  Serial.println(gps.altitude.meters());
-
-  print 
-  Serial.print("LAT=");  Serial.println(gps.location.lat(), 6);
-  Serial.print("LONG="); Serial.println(gps.location.lng(), 6);
-  Serial.print("ALT=");  Serial.println(gps.altitude.meters());
-
-  $GPRMB,A,4.08,L,EGLL,EGLM,5130.02,N,00046.34,W,004.6,213.9,122.9,A*3D
-
-  With TinyGPS++ it is now possible to extract just the “L” in the third field (it means “steer Left!”). It’s easy with the new TinyGPSCustom watcher object:
-  TinyGPSCustom steerDirection(gps, "GPRMB", 3);
-  Serial.print(steerDirection.value()); // prints "L" or "R"
-
-  El encode
-  SoftwareSerial ss(4, 3);
-  void loop()
-  {
-    while (ss.available() > 0)
-      gps.encode(ss.read);
-
-  
-  
-*/
-
 SoftwareSerial gps(12,13);
 
 char dato=' ';
@@ -53,8 +25,52 @@ void loop()
 {
   if(gps.available())
   {
-    dato=gps.read();
-    Serial.print(dato);
-    //delay(5000);
+    String nmeaSentence = gps.readStringUntil('\n');
+    
+    if (nmeaSentence.startsWith("$GPRMC")) {
+      char validity;
+      float latitude, longitude, speed, course;
+      int hour, minute, second, day, month, year;
+
+      int parsed = sscanf(nmeaSentence.c_str(), "$GPRMC,%2d%2d%2d.%3d,%c,%f,%f,%c,%f,%f,%6d,,,", &hour, &minute, &second, &day, &validity, &latitude, &longitude, &speed, &course, &year);
+
+      if (parsed == 10) {
+        Serial.print("Hora: ");
+        Serial.print(hour);
+        Serial.print(":");
+        Serial.print(minute);
+        Serial.print(":");
+        Serial.print(second);
+        Serial.println();
+
+        Serial.print("Fecha: ");
+        Serial.print(day);
+        Serial.print("/");
+        Serial.print(month);
+        Serial.print("/");
+        Serial.println(year);
+
+        Serial.print("Validez: ");
+        Serial.println(validity);
+
+        Serial.print("Latitud: ");
+        Serial.print(latitude, 6);
+        Serial.println();
+
+        Serial.print("Longitud: ");
+        Serial.print(longitude, 6);
+        Serial.println();
+
+        Serial.print("Velocidad: ");
+        Serial.print(speed);
+        Serial.println(" nudos");
+
+        Serial.print("Orientación: ");
+        Serial.print(course);
+        Serial.println(" grados");
+
+        Serial.println("-----------------------------");
+      }
+    }
   }
 }
