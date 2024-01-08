@@ -9,8 +9,6 @@
 
 SoftwareSerial gps(12,13);
 
-char dato=' ';
-
 void setup()
 {
  Serial.begin(115200);            
