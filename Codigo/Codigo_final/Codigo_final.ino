@@ -191,23 +191,31 @@ float medirTemperatura (int channelValue) {
 float medirSalinidad () {
   int16_t adc0;
 
-  digitalWrite(power_PIN, HIGH);
-  delay(100);
-  
-  adc0 = analogRead(A0);
-  digitalWrite(power_PIN, LOW);
+  digitalWrite(power_pin, HIGH);
   delay(100);
 
-  Serial.print("Lectura sal  = ");
+  
+  adc0 = (analogRead (A0))-400;
+  digitalWrite(power_pin, LOW);
+  delay(100);
+
+  Serial.print("Lectura digital = ");
   Serial.println(adc0, DEC);
 
-//
-//  float grSal = (adc0 - 575.6) / 6.32;
-//
-//  Serial.print("Gramos de sal: ");
-//  Serial.println(grSal);
-//
-//  return grSal;
+  Serial.print("Gramos de sal: ");
+  Serial.println(calcularSalinidad(adc0));
+  Serial.println("........................");
+
+}
+
+float calcularSalinidad (int adc0) {
+  float grSal = 0.0000007 * pow(adc0, 3) - 0.0006 * pow(adc0, 2) + 0.114 * adc0;
+  if (adc0 < 580) { 
+        grSal = 0; 
+    } 
+  
+  return grSal;
+
 }
 
 float medirPh (int channelValue) {
