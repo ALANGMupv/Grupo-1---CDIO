@@ -63,15 +63,15 @@ WiFiClient client;
 
 #define power_PIN 5
 #define channelTemp 1
-#define channelHumedad 0
-#define channelPh 2
+#define channelHumedad 2
+#define channelPh 0
 #define channelLum 3
 //#define channelSal 2
 
 int16_t humedadValue = 0;
 int16_t mediaHumedad;
 int16_t tempValue = 0;
-float Offset = -0.20;
+float Offset = 0.32;
 char dato=' ';
 
 Adafruit_ADS1115 ads1115;
@@ -123,7 +123,7 @@ void setup() {
 
   gps.begin(9600); 
   Serial.println("Inicializando el GPS...");
-  delay(27000);
+  delay(4000);
   Serial.println("Esperando datos");
 }
 
@@ -154,7 +154,7 @@ void loop() {
 
   HTTPGet(data, NUM_FIELDS_TO_SEND);
 
-  gps();
+  gpsCheck();
   
   delay(5000);
 }
@@ -191,21 +191,24 @@ float medirTemperatura (int channelValue) {
 float medirSalinidad () {
   int16_t adc0;
 
-  digitalWrite(power_pin, HIGH);
+  digitalWrite(power_PIN, HIGH);
   delay(100);
 
   
   adc0 = (analogRead (A0))-400;
-  digitalWrite(power_pin, LOW);
+  digitalWrite(power_PIN, LOW);
   delay(100);
 
   Serial.print("Lectura digital = ");
   Serial.println(adc0, DEC);
 
+  float grSal = calcularSalinidad(adc0);
+
   Serial.print("Gramos de sal: ");
-  Serial.println(calcularSalinidad(adc0));
+  Serial.println(grSal);
   Serial.println("........................");
 
+  return grSal;
 }
 
 float calcularSalinidad (int adc0) {
@@ -372,7 +375,7 @@ void HTTPGet(String fieldData[], int numFields){
     }
 }
 
-void gps() {
+void gpsCheck() {
   if(gps.available())
   {
     String nmeaSentence = gps.readStringUntil('\n');
